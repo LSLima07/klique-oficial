@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Globe, MessageCircle, SlidersHorizontal, type LucideIcon } from "lucide-react";
-import { Reveal } from "../hooks/use-reveal";
+import { Reveal } from "../hooks/use-reveal.tsx";
 import { SquiggleText } from "./squiggle-text";
 
 type CaseItem = {
