@@ -1,58 +1,88 @@
-import React, { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ElementType,
+  type HTMLAttributes,
+  type ReactNode,
+} from "react";
 
-export function revealClass(isVisible: boolean) {
-  return isVisible ? "reveal reveal-in" : "reveal";
+export function revealClass(visible: boolean) {
+  return visible ? "reveal reveal-in" : "reveal";
 }
 
-export function useReveal(options?: IntersectionObserverInit) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+type RevealOptions = {
+  threshold?: number;
+  rootMargin?: string;
+  once?: boolean;
+};
+
+export function useReveal<T extends HTMLElement = HTMLDivElement>({
+  threshold = 0.15,
+  rootMargin = "0px 0px -8% 0px",
+  once = true,
+}: RevealOptions = {}) {
+  const ref = useRef<T | null>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) {
-      setIsVisible(true);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || !("IntersectionObserver" in window)) {
+      setVisible(true);
       return;
     }
 
-    const observer = new IntersectionObserver(
+    const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(el);
+          setVisible(true);
+          if (once) io.disconnect();
+        } else if (!once) {
+          setVisible(false);
         }
       },
-      { threshold: 0.12, ...options }
+      { threshold, rootMargin },
     );
 
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [options]);
+    io.observe(el);
+    return () => io.disconnect();
+  }, [threshold, rootMargin, once]);
 
-  return { ref, isVisible };
+  return { ref, visible } as const;
 }
 
-interface RevealProps {
-  children: React.ReactNode;
+type RevealProps = Omit<HTMLAttributes<HTMLElement>, "className" | "style" | "children"> & {
+  as?: ElementType;
   delay?: number;
   className?: string;
-}
+  style?: CSSProperties;
+  children: ReactNode;
+};
 
-export function Reveal({ children, delay = 0, className = "" }: RevealProps) {
-  const { ref, isVisible } = useReveal();
+export function Reveal({
+  as: Tag = "div",
+  delay = 0,
+  className = "",
+  style,
+  children,
+  ...rest
+}: RevealProps) {
+  const { ref, visible } = useReveal<HTMLElement>();
+  const Component = Tag as ElementType;
 
   return (
-    <div
+    <Component
+      {...rest}
       ref={ref}
-      style={{ transitionDelay: `${delay}ms` }}
-      className={`transition-all duration-700 ease-out transform-gpu ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-      } ${className}`}
+      data-visible={visible}
+      className={`kq-reveal ${className}`}
+      style={{ transitionDelay: delay ? `${delay}ms` : undefined, ...style }}
     >
       {children}
-    </div>
+    </Component>
   );
 }
