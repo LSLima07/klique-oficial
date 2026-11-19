@@ -1,4 +1,5 @@
 import { useRef, type HTMLAttributes, type PointerEvent, type ReactNode } from "react";
+import { twMerge } from "tailwind-merge";
 
 type SpotlightCardProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
@@ -38,7 +39,10 @@ export function SpotlightCard({
     <div
       ref={ref}
       onPointerMove={handleMove}
-      className={`group relative overflow-hidden rounded-2xl border border-[#0B132B]/10 bg-white transition-transform duration-150 active:scale-[0.98] ${className}`}
+      className={twMerge(
+        "group relative overflow-hidden rounded-2xl border border-border bg-card transition-transform duration-150 active:scale-[0.98]",
+        className,
+      )}
       {...rest}
     >
       {/* Brilho radial suave */}
