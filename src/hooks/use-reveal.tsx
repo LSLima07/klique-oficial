@@ -1,86 +1,54 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ElementType,
-  type ReactNode,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-type RevealOptions = {
-  threshold?: number;
-  rootMargin?: string;
-  once?: boolean;
-};
-
-/**
- * Revela elementos ao entrar na tela usando apenas IntersectionObserver.
- * 0 kB de biblioteca externa. Respeita prefers-reduced-motion.
- */
-export function useReveal<T extends HTMLElement = HTMLDivElement>({
-  threshold = 0.15,
-  rootMargin = "0px 0px -8% 0px",
-  once = true,
-}: RevealOptions = {}) {
-  const ref = useRef<T | null>(null);
-  const [visible, setVisible] = useState(false);
+export function useReveal(options?: IntersectionObserverInit) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce || !("IntersectionObserver" in window)) {
-      setVisible(true);
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) {
+      setIsVisible(true);
       return;
     }
 
-    const io = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVisible(true);
-          if (once) io.disconnect();
-        } else if (!once) {
-          setVisible(false);
+          setIsVisible(true);
+          observer.unobserve(el);
         }
       },
-      { threshold, rootMargin },
+      { threshold: 0.12, ...options }
     );
 
-    io.observe(el);
-    return () => io.disconnect();
-  }, [threshold, rootMargin, once]);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [options]);
 
-  return { ref, visible } as const;
+  return { ref, isVisible };
 }
 
-type RevealProps = {
-  as?: ElementType;
-  /** Atraso em ms (use 100–300 para escalonar cards). */
+interface RevealProps {
+  children: React.ReactNode;
   delay?: number;
   className?: string;
-  style?: CSSProperties;
-  children: ReactNode;
-};
+}
 
-export function Reveal({
-  as: Tag = "div",
-  delay = 0,
-  className = "",
-  style,
-  children,
-}: RevealProps) {
-  const { ref, visible } = useReveal<HTMLElement>();
-  const Component = Tag as ElementType;
+export function Reveal({ children, delay = 0, className = "" }: RevealProps) {
+  const { ref, isVisible } = useReveal();
 
   return (
-    <Component
+    <div
       ref={ref}
-      data-visible={visible}
-      className={`kq-reveal ${className}`}
-      style={{ transitionDelay: delay ? `${delay}ms` : undefined, ...style }}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-700 ease-out transform-gpu ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+      } ${className}`}
     >
       {children}
-    </Component>
+    </div>
   );
 }
