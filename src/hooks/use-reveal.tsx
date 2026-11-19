@@ -1,5 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 
+export function revealClass(isVisible: boolean) {
+  return isVisible ? "reveal reveal-in" : "reveal";
+}
+
 export function useReveal(options?: IntersectionObserverInit) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
