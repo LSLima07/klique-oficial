@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Clock, Wallet } from "lucide-react";
-import { Reveal, useReveal } from "../hooks/use-reveal";
+import { Reveal, useReveal } from "../hooks/use-reveal.tsx";
 import { SpotlightCard } from "./spotlight-card";
 import { SquiggleText } from "./squiggle-text";
 
