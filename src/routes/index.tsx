@@ -3,7 +3,8 @@ import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { HowItWorks } from "@/components/how-it-works";
 import { Portfolio } from "@/components/portfolio";
-import { BeforeAfter } from "@/components/before-after";
+import { ConversionCharts } from "@/components/conversion-charts";
+import { PhoneScrollytelling } from "@/components/phone-scrollytelling";
 import { Faq, faqs } from "@/components/faq";
 import { Pricing } from "@/components/pricing";
 import { SiteFooter } from "@/components/site-footer";
@@ -81,8 +82,9 @@ function Index() {
       <main id="main-content" tabIndex={-1}>
         <Hero />
         <HowItWorks />
+        <PhoneScrollytelling />
         <Portfolio />
-        <BeforeAfter />
+        <ConversionCharts />
         <Pricing />
         <Faq />
       </main>
