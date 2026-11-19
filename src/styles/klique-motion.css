@@ -1,0 +1,47 @@
+/* Klique — motion nativo (GPU: transform + opacity). Importe em src/styles.css */
+
+.kq-reveal {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.kq-reveal[data-visible="true"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  will-change: auto;
+}
+
+/* Sublinhado orgânico animado (desenha o traço) */
+.kq-squiggle path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.25s;
+}
+
+.kq-squiggle[data-visible="true"] path {
+  stroke-dashoffset: 0;
+}
+
+/* Carrossel tátil sem barra de rolagem */
+.kq-no-scrollbar {
+  scrollbar-width: none;
+}
+.kq-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kq-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .kq-squiggle path {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+}
