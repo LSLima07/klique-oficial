@@ -7,6 +7,9 @@ import {
   type HeroSegmentId,
 } from "@/lib/hero-segments";
 import { VitrineSimulator } from "@/components/vitrine-simulator";
+import { Reveal } from "@/hooks/use-reveal";
+import { SpotlightCard } from "@/components/spotlight-card";
+import { SquiggleText } from "@/components/squiggle-text";
 
 type NicheQuickSelectorProps = {
   selectedSegment: HeroSegmentId;
@@ -49,6 +52,8 @@ export function NicheQuickSelector({ selectedSegment, onSelect, previewId }: Nic
   );
 }
 
+const DOT_MASK = "radial-gradient(ellipse 80% 70% at 50% 0%, #000 35%, transparent 100%)";
+
 export function Hero() {
   const [selectedSegment, setSelectedSegment] = useState<HeroSegmentId>("delivery");
   const id = useId();
@@ -57,28 +62,57 @@ export function Hero() {
   const preview = getHeroPreview(selectedSegment);
 
   return (
-    <section aria-labelledby={headingId} className="bg-gradient-to-b from-surface to-background text-foreground">
+    <section
+      aria-labelledby={headingId}
+      className="relative isolate overflow-hidden bg-gradient-to-b from-surface to-background text-foreground"
+    >
+      {/* Textura de grade pontilhada com fade nas bordas (puro CSS, sem imagem) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          backgroundImage: "radial-gradient(rgba(11,19,43,0.14) 1px, transparent 1.5px)",
+          backgroundSize: "22px 22px",
+          maskImage: DOT_MASK,
+          WebkitMaskImage: DOT_MASK,
+        }}
+      />
+
       <div className="mx-auto flex max-w-5xl flex-col items-center px-4 py-12 text-center sm:px-6 sm:py-14 lg:py-16">
-        <h1 id={headingId} className="max-w-4xl text-balance font-display text-3xl font-extrabold leading-tight tracking-normal sm:text-4xl lg:text-5xl">
+        {/* H1 é o LCP: entra por animação CSS (não espera hidratação do JS) */}
+        <h1
+          id={headingId}
+          className="max-w-4xl text-balance font-display text-3xl font-extrabold leading-tight tracking-tight animate-in fade-in slide-in-from-bottom-2 duration-700 motion-reduce:animate-none sm:text-4xl lg:text-5xl"
+        >
           O estoque ou cardápio da sua loja direto no{" "}
-          <span className="text-primary">WhatsApp do seu cliente.</span>{" "}
+          <span className="text-primary">
+            <SquiggleText>WhatsApp</SquiggleText> do seu cliente.
+          </span>{" "}
           Sem complicação.
         </h1>
 
-        <p className="mt-4 max-w-2xl text-sm font-medium leading-relaxed text-muted-foreground sm:text-base">
+        <Reveal
+          as="p"
+          delay={100}
+          className="mt-4 max-w-2xl text-sm font-medium leading-relaxed text-muted-foreground sm:text-base"
+        >
           Seu negócio no celular do cliente, a um klique de vender.
-        </p>
+        </Reveal>
 
-        <p className="mt-5 max-w-3xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
+        <Reveal
+          as="p"
+          delay={200}
+          className="mt-5 max-w-3xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
+        >
           Criamos a vitrine virtual rápida da sua loja em até 5 dias úteis,
           configuramos seu Google Meu Negócio e deixamos tudo pronto para você só
           responder os clientes.
-        </p>
+        </Reveal>
 
-        <div className="mt-8 w-full max-w-3xl">
+        <Reveal delay={300} className="mt-8 w-full max-w-3xl">
           <NicheQuickSelector selectedSegment={selectedSegment} onSelect={setSelectedSegment} previewId={previewId} />
 
-          <div className="mt-5 rounded-2xl border border-border bg-background p-5 text-left shadow-soft">
+          <SpotlightCard className="mt-5 border-border bg-background p-5 text-left shadow-soft">
             <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
               <MessageCircle aria-hidden="true" className="size-4 text-primary" />
               Exemplo de mensagem do seu cliente
@@ -88,10 +122,12 @@ export function Hero() {
                 <strong className="font-semibold">“{preview}”</strong>
               </p>
             </div>
-          </div>
-        </div>
+          </SpotlightCard>
+        </Reveal>
 
-        <VitrineSimulator segment={selectedSegment} />
+        <Reveal delay={400} className="flex w-full flex-col items-center">
+          <VitrineSimulator segment={selectedSegment} />
+        </Reveal>
       </div>
     </section>
   );
