@@ -9,6 +9,7 @@ import { Faq, faqs } from "@/components/faq";
 import { Pricing } from "@/components/pricing";
 import { SiteFooter } from "@/components/site-footer";
 import { WhatsappFloat } from "@/components/whatsapp-float";
+import { GlobalSpotlight } from "@/components/global-spotlight";
 
 const SITE_URL = "https://klique-oficial-website.lovable.app";
 const CONTACT_EMAIL = "klique.sites@gmail.com";
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: SITE_URL + "/" },
+      { name: "theme-color", content: "#FBF9F6" },
     ],
     links: [{ rel: "canonical", href: SITE_URL + "/" }],
     scripts: [
@@ -82,6 +84,7 @@ function Index() {
       >
         Pular para o conteúdo principal
       </a>
+      <GlobalSpotlight />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
         <Hero />
