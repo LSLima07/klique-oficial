@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { Instagram, Linkedin, MessageCircle, Mail, X } from "lucide-react";
+import { Instagram, Linkedin, MessageCircle, X } from "lucide-react";
 import { WHATSAPP_QUOTE_URL } from "@/lib/whatsapp";
+
+const WHATSAPP_NUMBER_LABEL = "(15) 99813-0853";
+const WHATSAPP_DIRECT_URL = "https://wa.me/5515998130853";
 
 const quickLinks = [
   { label: "Início", href: "#" },
@@ -63,11 +66,14 @@ export function SiteFooter() {
               Contato
             </h3>
             <a
-              href="mailto:contato@nexora.com.br"
-              className="group inline-flex max-w-full items-center gap-2 break-all text-sm text-muted-foreground transition-colors hover:text-foreground"
+              href={WHATSAPP_DIRECT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Falar com a Klique no WhatsApp: ${WHATSAPP_NUMBER_LABEL} (abre em nova aba)`}
+              className="group inline-flex max-w-full items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-              <Mail className="h-4 w-4 shrink-0 text-cyan" />
-              contato@nexora.com.br
+              <MessageCircle aria-hidden="true" className="h-4 w-4 shrink-0 text-cyan" />
+              WhatsApp {WHATSAPP_NUMBER_LABEL}
             </a>
             <div>
               <a
@@ -164,9 +170,14 @@ export function SiteFooter() {
               <p>
                 <strong className="text-foreground/90">Seus direitos:</strong>{" "}
                 você pode solicitar a qualquer momento o acesso, a correção ou a
-                exclusão dos seus dados pelo e-mail{" "}
-                <a href="mailto:contato@nexora.com.br" className="text-cyan">
-                  contato@nexora.com.br
+                exclusão dos seus dados pelo WhatsApp{" "}
+                <a
+                  href={WHATSAPP_DIRECT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan"
+                >
+                  {WHATSAPP_NUMBER_LABEL}
                 </a>
                 .
               </p>
