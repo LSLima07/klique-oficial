@@ -1,5 +1,6 @@
 import { ArrowRight, CupSoda, Gift, Leaf, CakeSlice, MessageCircle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useEffect, useRef, type PointerEvent } from "react";
 import { Reveal } from "@/hooks/use-reveal";
 import { Button } from "@/components/ui/button";
 import { SpotlightCard } from "@/components/spotlight-card";
@@ -66,8 +67,8 @@ export function Portfolio() {
   return (
     <section id="portfolio" aria-labelledby="portfolio-title" className="bg-surface py-20 md:py-28">
       <div className="mx-auto max-w-5xl px-6">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Casos de sucesso</span>
+        <Reveal stagger className="mx-auto max-w-2xl text-center">
+          <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-primary">Casos de sucesso</span>
           <h2 id="portfolio-title" className="mt-4 text-balance font-display text-3xl font-extrabold tracking-tight md:text-4xl">
             Projetos reais que conectam <SquiggleText>Angatuba</SquiggleText>
           </h2>
@@ -85,57 +86,103 @@ export function Portfolio() {
   );
 }
 
+/**
+ * Elevação magnética: o card sobe e se inclina levemente na direção do cursor.
+ * Só mouse (no toque fica o active:scale do SpotlightCard) e só transform.
+ * Os eventos ficam num wrapper estático para a área de hover não "fugir" do cursor.
+ */
+function useMagneticLift(strength = 6, lift = 6) {
+  const outer = useRef<HTMLDivElement>(null);
+  const inner = useRef<HTMLDivElement>(null);
+  const frame = useRef(0);
+  const reduce = useRef(false);
+
+  useEffect(() => {
+    reduce.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return () => cancelAnimationFrame(frame.current);
+  }, []);
+
+  const apply = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse" || reduce.current) return;
+    const box = outer.current;
+    const card = inner.current;
+    if (!box || !card) return;
+    const { clientX, clientY } = e;
+    cancelAnimationFrame(frame.current);
+    frame.current = requestAnimationFrame(() => {
+      const r = box.getBoundingClientRect();
+      const dx = (clientX - r.left) / r.width - 0.5;
+      const dy = (clientY - r.top) / r.height - 0.5;
+      card.style.setProperty("--kq-mx", `${(dx * 2 * strength).toFixed(2)}px`);
+      card.style.setProperty("--kq-my", `${(dy * 2 * strength - lift).toFixed(2)}px`);
+    });
+  };
+
+  const reset = () => {
+    cancelAnimationFrame(frame.current);
+    inner.current?.style.removeProperty("--kq-mx");
+    inner.current?.style.removeProperty("--kq-my");
+  };
+
+  return { outer, inner, handlers: { onPointerEnter: apply, onPointerMove: apply, onPointerLeave: reset } };
+}
+
 function ProjectCard({ project, index }: { project: Project; index: number }) {
   const Icon = project.icon;
+  const magnet = useMagneticLift();
   return (
     <Reveal as="article" delay={index * 140} className="h-full">
-      <SpotlightCard className="h-full rounded-3xl border-border bg-card p-8 shadow-soft duration-300 hover:-translate-y-1">
-        <div className="flex h-full flex-col">
-          <div className="flex justify-end">
-            <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-muted-foreground">
-              {project.niche} • {project.city}
-            </span>
-          </div>
-          <div className="mt-6 flex items-center gap-3">
-            <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-surface p-1 text-primary">
-              {project.logoUrl ? (
-                <img src={project.logoUrl} alt="" width={32} height={32} loading="lazy" className="size-8 object-contain" />
-              ) : (
-                <Icon aria-hidden="true" className="size-6" />
-              )}
-            </span>
-            <h3 className="min-w-0 font-display text-2xl font-bold tracking-tight">{project.name}</h3>
-          </div>
-          <p className="mt-2 leading-relaxed text-muted-foreground">{project.description}</p>
-          <ul className="mt-6 flex-1 space-y-2 text-sm">
-            {project.highlights.map((h) => (
-              <li key={h} className="flex items-start gap-2">
-                <span aria-hidden="true" className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
-                {h}
-              </li>
-            ))}
-          </ul>
-          <Button
-            asChild
-            variant="outline"
-            className="group/btn mt-8 h-auto w-fit rounded-full px-5 py-2.5 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/60 active:scale-95 motion-reduce:transition-none"
-          >
-            <a
-              href={project.url ?? buildWhatsappUrl(`Olá, Klique! Quero conhecer o projeto ${project.name} e criar uma solução parecida.`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${project.url ? "Ver site de" : "Conhecer"} ${project.name} (abre em nova aba)`}
-            >
-              {project.url ? "Ver site" : "Conhecer projeto"}
-              {project.url ? (
-                <ArrowRight aria-hidden="true" className="size-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
-              ) : (
-                <MessageCircle aria-hidden="true" className="size-4" />
-              )}
-            </a>
-          </Button>
+      <div ref={magnet.outer} {...magnet.handlers} className="h-full">
+        <div ref={magnet.inner} className="kq-magnetic h-full">
+          <SpotlightCard className="h-full rounded-3xl border-border bg-card p-8 shadow-soft transition-[transform,box-shadow] duration-300 [@media(hover:hover)]:hover:shadow-[0_28px_56px_-24px_rgba(11,19,43,0.28)]">
+            <div className="flex h-full flex-col">
+              <div className="flex justify-end">
+                <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-muted-foreground">
+                  {project.niche} • {project.city}
+                </span>
+              </div>
+              <div className="mt-6 flex items-center gap-3">
+                <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-surface p-1 text-primary">
+                  {project.logoUrl ? (
+                    <img src={project.logoUrl} alt="" width={32} height={32} loading="lazy" className="size-8 object-contain" />
+                  ) : (
+                    <Icon aria-hidden="true" className="size-6" />
+                  )}
+                </span>
+                <h3 className="min-w-0 font-display text-2xl font-bold tracking-tight">{project.name}</h3>
+              </div>
+              <p className="mt-2 leading-relaxed text-muted-foreground">{project.description}</p>
+              <ul className="mt-6 flex-1 space-y-2 text-sm">
+                {project.highlights.map((h) => (
+                  <li key={h} className="flex items-start gap-2">
+                    <span aria-hidden="true" className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
+                    {h}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                asChild
+                variant="outline"
+                className="group/btn mt-8 h-auto w-fit rounded-full px-5 py-2.5 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/60 active:scale-95 motion-reduce:transition-none"
+              >
+                <a
+                  href={project.url ?? buildWhatsappUrl(`Olá, Klique! Quero conhecer o projeto ${project.name} e criar uma solução parecida.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${project.url ? "Ver site de" : "Conhecer"} ${project.name} (abre em nova aba)`}
+                >
+                  {project.url ? "Ver site" : "Conhecer projeto"}
+                  {project.url ? (
+                    <ArrowRight aria-hidden="true" className="size-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
+                  ) : (
+                    <MessageCircle aria-hidden="true" className="size-4" />
+                  )}
+                </a>
+              </Button>
+            </div>
+          </SpotlightCard>
         </div>
-      </SpotlightCard>
+      </div>
     </Reveal>
   );
 }
