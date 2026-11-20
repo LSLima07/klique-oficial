@@ -1,33 +1,83 @@
 /* Klique — motion nativo (GPU: transform + opacity). Importe em src/styles.css */
 
-/* Fade-in + subida suave, bem perceptível ao rolar a página */
+/* ---------- Reveal dramático ao rolar ---------- */
 .kq-reveal {
   opacity: 0;
-  transform: translate3d(0, 24px, 0);
+  transform: translate3d(0, 32px, 0) scale(0.98);
   transition:
-    opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 
+/* Variantes de direção: <Reveal from="left" | "right" | "scale"> */
+.kq-reveal[data-from="left"] {
+  transform: translate3d(-48px, 0, 0) scale(0.98);
+}
+.kq-reveal[data-from="right"] {
+  transform: translate3d(48px, 0, 0) scale(0.98);
+}
+.kq-reveal[data-from="scale"] {
+  transform: translate3d(0, 16px, 0) scale(0.94);
+}
+
+/* Precisa vir DEPOIS das variantes (mesma especificidade) */
 .kq-reveal[data-visible="true"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: auto;
+}
+
+/* ---------- Cascata: <Reveal stagger> faz cada filho entrar em sequência ---------- */
+.kq-stagger > * {
+  opacity: 0;
+  transform: translate3d(0, 32px, 0) scale(0.98);
+  transition:
+    opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--kq-base, 0ms) + var(--kq-i, 0) * 110ms);
+  will-change: opacity, transform;
+}
+.kq-stagger[data-visible="true"] > * {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: auto;
+}
+.kq-stagger > :nth-child(1) { --kq-i: 0; }
+.kq-stagger > :nth-child(2) { --kq-i: 1; }
+.kq-stagger > :nth-child(3) { --kq-i: 2; }
+.kq-stagger > :nth-child(4) { --kq-i: 3; }
+.kq-stagger > :nth-child(5) { --kq-i: 4; }
+.kq-stagger > :nth-child(6) { --kq-i: 5; }
+.kq-stagger > :nth-child(7) { --kq-i: 6; }
+.kq-stagger > :nth-child(8) { --kq-i: 7; }
+
+/* ---------- Deslize lateral (números e barras dos gráficos) ---------- */
+.kq-slide {
+  opacity: 0;
+  transform: translate3d(var(--kq-sx, -32px), 0, 0);
+  transition:
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.kq-slide[data-active="true"] {
   opacity: 1;
   transform: translate3d(0, 0, 0);
   will-change: auto;
 }
 
-/* Sublinhado orgânico animado (desenha o traço) */
+/* ---------- Sublinhado orgânico animado (desenha o traço) ---------- */
 .kq-squiggle path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   transition: stroke-dashoffset 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.25s;
 }
-
 .kq-squiggle[data-visible="true"] path {
   stroke-dashoffset: 0;
 }
 
-/* Carrossel tátil sem barra de rolagem */
+/* ---------- Carrossel tátil sem barra de rolagem ---------- */
 .kq-no-scrollbar {
   scrollbar-width: none;
 }
@@ -35,7 +85,7 @@
   display: none;
 }
 
-/* Barra de progresso do auto-play (a duração vem inline, em PhoneScrollytelling) */
+/* ---------- Barra de progresso do auto-play (duração vem inline) ---------- */
 @keyframes kq-progress {
   from {
     transform: scaleX(0);
@@ -44,13 +94,90 @@
     transform: scaleX(1);
   }
 }
-
 .kq-progress {
   animation: kq-progress 4000ms linear forwards;
 }
 
+/* ---------- Aura luminosa do Hero ---------- */
+/* Flutuação orgânica lenta. No celular (sem mouse) a deriva é maior e mais lenta. */
+@keyframes kq-aura-float {
+  0% {
+    transform: translate3d(calc(var(--kq-drift, 28px) * -1), 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(var(--kq-drift, 28px), calc(var(--kq-drift, 28px) * 0.6), 0) scale(1.08);
+  }
+  66% {
+    transform: translate3d(calc(var(--kq-drift, 28px) * 0.4), calc(var(--kq-drift, 28px) * -0.7), 0) scale(0.95);
+  }
+  100% {
+    transform: translate3d(calc(var(--kq-drift, 28px) * -0.6), calc(var(--kq-drift, 28px) * 0.3), 0) scale(1.04);
+  }
+}
+.kq-aura-float {
+  animation: kq-aura-float 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.kq-aura-float-alt {
+  animation-duration: 24s;
+  animation-direction: alternate-reverse;
+}
+@media (hover: none) {
+  .kq-aura-float {
+    --kq-drift: 90px;
+    animation-duration: 26s;
+  }
+  .kq-aura-float-alt {
+    animation-duration: 34s;
+  }
+}
+
+/* ---------- Shimmer sweep nos botões principais (hover) ---------- */
+.kq-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.kq-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    var(--kq-shimmer, rgba(255, 255, 255, 0.4)) 50%,
+    transparent 65%
+  );
+  transform: translate3d(-130%, 0, 0);
+}
+@media (hover: hover) {
+  .kq-shimmer:hover::after {
+    transform: translate3d(130%, 0, 0);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* ---------- Elevação magnética (cards do portfólio) ---------- */
+.kq-magnetic {
+  transform: translate3d(var(--kq-mx, 0px), var(--kq-my, 0px), 0);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* ---------- Movimento reduzido ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .kq-reveal {
+  .kq-reveal,
+  .kq-reveal[data-from] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .kq-stagger > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .kq-slide {
     opacity: 1;
     transform: none;
     transition: none;
@@ -59,7 +186,15 @@
     stroke-dashoffset: 0;
     transition: none;
   }
-  .kq-progress {
+  .kq-progress,
+  .kq-aura-float {
     animation: none;
+  }
+  .kq-shimmer::after {
+    display: none;
+  }
+  .kq-magnetic {
+    transform: none;
+    transition: none;
   }
 }
