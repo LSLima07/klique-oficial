@@ -1,11 +1,12 @@
 /* Klique — motion nativo (GPU: transform + opacity). Importe em src/styles.css */
 
+/* Fade-in + subida suave, bem perceptível ao rolar a página */
 .kq-reveal {
   opacity: 0;
-  transform: translate3d(0, 20px, 0);
+  transform: translate3d(0, 24px, 0);
   transition:
-    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 
@@ -34,6 +35,20 @@
   display: none;
 }
 
+/* Barra de progresso do auto-play (a duração vem inline, em PhoneScrollytelling) */
+@keyframes kq-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.kq-progress {
+  animation: kq-progress 4000ms linear forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kq-reveal {
     opacity: 1;
@@ -43,5 +58,8 @@
   .kq-squiggle path {
     stroke-dashoffset: 0;
     transition: none;
+  }
+  .kq-progress {
+    animation: none;
   }
 }
