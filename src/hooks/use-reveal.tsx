@@ -8,16 +8,16 @@ import {
   type ReactNode,
 } from "react";
 
-export function revealClass(visible: boolean) {
-  return visible ? "reveal reveal-in" : "reveal";
-}
-
 type RevealOptions = {
   threshold?: number;
   rootMargin?: string;
   once?: boolean;
 };
 
+/**
+ * Revela elementos ao entrar na tela usando apenas IntersectionObserver.
+ * 0 kB de biblioteca externa. Respeita prefers-reduced-motion.
+ */
 export function useReveal<T extends HTMLElement = HTMLDivElement>({
   threshold = 0.15,
   rootMargin = "0px 0px -8% 0px",
@@ -55,9 +55,30 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>({
   return { ref, visible } as const;
 }
 
+/**
+ * Compatibilidade: componentes antigos (ex.: cabeçalho) ainda usam as classes
+ * `.reveal` / `.reveal-in` definidas em styles.css. Não remover.
+ */
+export function revealClass(visible: boolean) {
+  return visible ? "reveal reveal-in" : "reveal";
+}
+
+/** Direção de entrada: "up" (padrão), deslize lateral ou zoom suave. */
+export type RevealFrom = "up" | "left" | "right" | "scale";
+
 type RevealProps = Omit<HTMLAttributes<HTMLElement>, "className" | "style" | "children"> & {
   as?: ElementType;
+  /** Atraso em ms (use 100–300 para escalonar cards). */
   delay?: number;
+  /** De onde o bloco desliza ao aparecer. */
+  from?: RevealFrom;
+  /**
+   * Cascata: em vez de animar o bloco inteiro, anima cada filho direto
+   * em sequência (110 ms entre eles). Ideal para cabeçalhos de seção
+   * (rótulo → título → subtítulo). Filhos precisam ser `block`/`flex`
+   * (elementos `inline` ignoram transform).
+   */
+  stagger?: boolean;
   className?: string;
   style?: CSSProperties;
   children: ReactNode;
@@ -66,6 +87,8 @@ type RevealProps = Omit<HTMLAttributes<HTMLElement>, "className" | "style" | "ch
 export function Reveal({
   as: Tag = "div",
   delay = 0,
+  from = "up",
+  stagger = false,
   className = "",
   style,
   children,
@@ -74,13 +97,18 @@ export function Reveal({
   const { ref, visible } = useReveal<HTMLElement>();
   const Component = Tag as ElementType;
 
+  const motionStyle: CSSProperties = stagger
+    ? ({ "--kq-base": `${delay}ms` } as CSSProperties)
+    : { transitionDelay: delay ? `${delay}ms` : undefined };
+
   return (
     <Component
       {...rest}
       ref={ref}
       data-visible={visible}
-      className={`kq-reveal ${className}`}
-      style={{ transitionDelay: delay ? `${delay}ms` : undefined, ...style }}
+      data-from={!stagger && from !== "up" ? from : undefined}
+      className={`${stagger ? "kq-stagger" : "kq-reveal"} ${className}`}
+      style={{ ...motionStyle, ...style }}
     >
       {children}
     </Component>
