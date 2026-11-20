@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { Instagram, Linkedin, MessageCircle, X } from "lucide-react";
+import { Instagram, Mail, MessageCircle, X } from "lucide-react";
 import { WHATSAPP_QUOTE_URL } from "@/lib/whatsapp";
 
 const WHATSAPP_NUMBER_LABEL = "(15) 99813-0853";
 const WHATSAPP_DIRECT_URL = "https://wa.me/5515998130853";
+const EMAIL = "klique.sites@gmail.com";
+const INSTAGRAM_HANDLE = "@klique.sites";
+const INSTAGRAM_URL = "https://instagram.com/klique.sites";
 
 const quickLinks = [
   { label: "Início", href: "#" },
@@ -11,10 +14,33 @@ const quickLinks = [
   { label: "Portfólio", href: "#portfolio" },
 ];
 
+const contactLinks = [
+  {
+    label: "WhatsApp",
+    text: `WhatsApp ${WHATSAPP_NUMBER_LABEL}`,
+    href: WHATSAPP_DIRECT_URL,
+    icon: MessageCircle,
+    external: true,
+  },
+  {
+    label: "E-mail",
+    text: EMAIL,
+    href: `mailto:${EMAIL}`,
+    icon: Mail,
+    external: false,
+  },
+  {
+    label: "Instagram",
+    text: INSTAGRAM_HANDLE,
+    href: INSTAGRAM_URL,
+    icon: Instagram,
+    external: true,
+  },
+];
+
 const socials = [
-  { label: "Instagram", href: "#", icon: Instagram },
-  { label: "LinkedIn", href: "#", icon: Linkedin },
-  { label: "WhatsApp", href: WHATSAPP_QUOTE_URL, icon: MessageCircle },
+  { label: "Instagram da Klique", href: INSTAGRAM_URL, icon: Instagram },
+  { label: "WhatsApp da Klique", href: WHATSAPP_QUOTE_URL, icon: MessageCircle },
 ];
 
 export function SiteFooter() {
@@ -65,22 +91,27 @@ export function SiteFooter() {
             <h3 className="font-display text-sm font-semibold uppercase tracking-[0.18em] text-foreground/80">
               Contato
             </h3>
-            <a
-              href={WHATSAPP_DIRECT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Falar com a Klique no WhatsApp: ${WHATSAPP_NUMBER_LABEL} (abre em nova aba)`}
-              className="group inline-flex max-w-full items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <MessageCircle aria-hidden="true" className="h-4 w-4 shrink-0 text-cyan" />
-              WhatsApp {WHATSAPP_NUMBER_LABEL}
-            </a>
+            <ul className="space-y-3">
+              {contactLinks.map(({ label, text, href, icon: Icon, external }) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                    aria-label={`${label}: ${text}${external ? " (abre em nova aba)" : ""}`}
+                    className="group inline-flex max-w-full items-center gap-2 break-all text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-cyan transition-transform duration-200 group-hover:scale-110" />
+                    {text}
+                  </a>
+                </li>
+              ))}
+            </ul>
             <div>
               <a
                 href={WHATSAPP_QUOTE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[0_0_28px_-4px_var(--neon-green)] active:scale-[0.98]"
+                className="kq-shimmer inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[0_0_28px_-4px_var(--neon-green)] active:scale-[0.98]"
               >
                 Solicitar Orçamento
               </a>
@@ -93,9 +124,9 @@ export function SiteFooter() {
                   aria-label={label}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-foreground/10 bg-foreground/[0.02] text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-cyan/40 hover:text-cyan hover:shadow-[0_0_24px_-6px_var(--cyan)]"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-foreground/10 bg-foreground/[0.02] text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-cyan/40 hover:text-cyan hover:shadow-[0_0_24px_-6px_var(--cyan)] active:scale-95"
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon aria-hidden="true" className="h-4 w-4" />
                 </a>
               ))}
             </div>
@@ -170,7 +201,11 @@ export function SiteFooter() {
               <p>
                 <strong className="text-foreground/90">Seus direitos:</strong>{" "}
                 você pode solicitar a qualquer momento o acesso, a correção ou a
-                exclusão dos seus dados pelo WhatsApp{" "}
+                exclusão dos seus dados pelo e-mail{" "}
+                <a href={`mailto:${EMAIL}`} className="text-cyan">
+                  {EMAIL}
+                </a>{" "}
+                ou pelo WhatsApp{" "}
                 <a
                   href={WHATSAPP_DIRECT_URL}
                   target="_blank"
