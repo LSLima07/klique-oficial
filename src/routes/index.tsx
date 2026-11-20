@@ -11,6 +11,9 @@ import { SiteFooter } from "@/components/site-footer";
 import { WhatsappFloat } from "@/components/whatsapp-float";
 
 const SITE_URL = "https://klique-oficial-website.lovable.app";
+const CONTACT_EMAIL = "klique.sites@gmail.com";
+const INSTAGRAM_URL = "https://instagram.com/klique.sites";
+const WHATSAPP_URL = "https://wa.me/5515998130853";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -39,15 +42,16 @@ export const Route = createFileRoute("/")({
           logo: `${SITE_URL}/favicon.png`,
           areaServed: "Itapetininga, Angatuba e Região (São Paulo)",
           telephone: "+5515998130853",
+          email: CONTACT_EMAIL,
           priceRange: "$$",
           contactPoint: {
             "@type": "ContactPoint",
             contactType: "customer service",
             telephone: "+5515998130853",
+            email: CONTACT_EMAIL,
             availableLanguage: ["Portuguese"],
-            contactOption: "TollFree",
           },
-          sameAs: [`https://wa.me/5515998130853`],
+          sameAs: [WHATSAPP_URL, INSTAGRAM_URL],
         }),
       },
       {
