@@ -1,6 +1,6 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { Clock, Wallet } from "lucide-react";
-import { Reveal, useReveal } from "../hooks/use-reveal.tsx";
+import { Reveal, useReveal } from "../hooks/use-reveal";
 import { SpotlightCard } from "./spotlight-card";
 import { SquiggleText } from "./squiggle-text";
 
@@ -61,15 +61,31 @@ function Row({
   label,
   value,
   children,
+  active,
+  from = "left",
+  delay = 0,
   highlight = false,
 }: {
   label: string;
   value: ReactNode;
   children: ReactNode;
+  /** Quando true, a linha desliza para o lugar (número + barra juntos). */
+  active: boolean;
+  from?: "left" | "right";
+  delay?: number;
   highlight?: boolean;
 }) {
   return (
-    <div>
+    <div
+      className="kq-slide"
+      data-active={active}
+      style={
+        {
+          "--kq-sx": from === "left" ? "-32px" : "32px",
+          transitionDelay: `${delay}ms`,
+        } as CSSProperties
+      }
+    >
       <div className="mb-2 flex items-baseline justify-between gap-3">
         <span className="text-sm font-semibold text-[#0B132B]/70">{label}</span>
         <span
@@ -135,6 +151,8 @@ function TimeChart() {
         <div className="space-y-6">
           <Row
             label="Mandando fotos soltas"
+            active={visible}
+            from="left"
             value={<Counter to={3.5} decimals={1} active={visible} suffix="h/dia" />}
           >
             <Fill percent={100} active={visible} color="#0B132B" />
@@ -143,6 +161,9 @@ function TimeChart() {
           <Row
             highlight
             label="Pedidos prontos no WhatsApp"
+            active={visible}
+            from="right"
+            delay={200}
             value={<Counter to={25} active={visible} suffix=" min/dia" />}
           >
             <Fill percent={afterPercent} active={visible} color="#FF5A3D" delay={250} />
@@ -178,6 +199,8 @@ function MarginChart() {
           <Row
             highlight
             label="Com a Klique (0% de comissão)"
+            active={visible}
+            from="left"
             value={<Counter to={100} active={visible} suffix="% seu" />}
           >
             <Fill percent={100} active={visible} color="#FF5A3D" />
@@ -185,6 +208,9 @@ function MarginChart() {
 
           <Row
             label="Apps de terceiros"
+            active={visible}
+            from="right"
+            delay={200}
             value={<Counter to={27} active={visible} prefix="até " suffix="% de taxa" />}
           >
             {/* A taxa "morde" a barra pela direita */}
@@ -206,7 +232,7 @@ export function ConversionCharts() {
   return (
     <section id="antes-depois" className="bg-white py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-5">
-        <Reveal className="mx-auto max-w-2xl text-center">
+        <Reveal stagger className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-extrabold tracking-tight text-[#0B132B] sm:text-5xl">
             Antes e depois: mais tempo e <SquiggleText>mais lucro</SquiggleText>
           </h2>
@@ -216,10 +242,10 @@ export function ConversionCharts() {
         </Reveal>
 
         <div className="mt-12 grid gap-6 md:grid-cols-2">
-          <Reveal>
+          <Reveal from="left">
             <TimeChart />
           </Reveal>
-          <Reveal delay={150}>
+          <Reveal from="right" delay={150}>
             <MarginChart />
           </Reveal>
         </div>
