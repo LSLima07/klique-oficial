@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./styles/klique-motion.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -57,6 +58,7 @@
   --color-navy: var(--navy);
   --color-coral: var(--coral);
   --color-surface: var(--surface);
+  --color-ivory: var(--ivory);
   --color-whatsapp: var(--whatsapp);
   --color-whatsapp-foreground: var(--whatsapp-foreground);
   --shadow-soft: var(--shadow-soft);
@@ -72,10 +74,11 @@
   /* Klique — claro, marinho profundo + coral. Nomes antigos viram aliases. */
   --navy: #0b132b;
   --coral: #ff5a3d;
-  --surface: #f9fafb;
+  --ivory: #fbf9f6; /* marfim */
+  --surface: #f4efe7; /* creme quente (seções alternadas) */
   --whatsapp: #167a42;
   --whatsapp-foreground: #ffffff;
-  --midnight: #f9fafb;
+  --midnight: #fbf9f6;
   --deep-bg: #ffffff;
   --tech-blue: #0b132b;
   --cyan: #ff5a3d;
@@ -84,7 +87,7 @@
   --mint: #ff5a3d;
   --smoked-ebony: #ffffff;
 
-  --background: #ffffff;
+  --background: var(--ivory);
   --foreground: var(--navy);
   --card: #ffffff;
   --card-foreground: var(--navy);
@@ -100,8 +103,8 @@
   --accent-foreground: var(--navy);
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: #ffffff;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
+  --border: #e4dccf;
+  --input: #e4dccf;
   --ring: var(--coral);
   --chart-1: var(--navy);
   --chart-2: var(--coral);
@@ -116,7 +119,7 @@
   --sidebar-accent-foreground: var(--navy);
   --sidebar-border: #e5e7eb;
   --sidebar-ring: var(--coral);
-  --shadow-soft: 0 1px 2px rgb(11 19 43 / 0.04), 0 12px 32px -12px rgb(11 19 43 / 0.12);
+  --shadow-soft: 0 1px 2px rgb(11 19 43 / 0.05), 0 14px 34px -14px rgb(11 19 43 / 0.16);
   --shadow-coral: 0 10px 24px -10px rgb(255 90 61 / 0.55);
 }
 
@@ -174,4 +177,42 @@
     .rocket-lift { animation: none; }
     .reveal { opacity: 1; transform: none; transition: none; }
   }
+}
+
+/* ===== Fundo editorial: marfim + malhas radiais, alternando por seção =====
+   Regras fora de @layer vencem as utilities do Tailwind, então valem mesmo para
+   seções que ainda tenham bg-white / bg-[#F9FAFB] no próprio componente.
+   Cards continuam em branco puro (--card: #ffffff) com borda quente definida. */
+#main-content > section {
+  position: relative;
+  isolation: isolate;
+}
+
+#main-content > section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Seções ímpares: marfim com malha bem suave */
+#main-content > section:nth-of-type(odd) {
+  background-color: var(--background);
+}
+#main-content > section:nth-of-type(odd)::before {
+  background:
+    radial-gradient(50% 45% at 0% 0%, rgba(56, 189, 248, 0.09), transparent 70%),
+    radial-gradient(50% 50% at 100% 100%, rgba(255, 90, 61, 0.07), transparent 70%);
+}
+
+/* Seções pares: creme quente com malha mais presente nas bordas */
+#main-content > section:nth-of-type(even) {
+  background-color: var(--surface);
+}
+#main-content > section:nth-of-type(even)::before {
+  background:
+    radial-gradient(60% 50% at 100% 0%, rgba(255, 90, 61, 0.1), transparent 70%),
+    radial-gradient(55% 60% at 0% 100%, rgba(56, 189, 248, 0.12), transparent 70%),
+    radial-gradient(40% 40% at 50% 50%, rgba(255, 90, 61, 0.04), transparent 70%);
 }
