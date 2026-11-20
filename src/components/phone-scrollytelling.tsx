@@ -3,18 +3,20 @@ import { Globe, MessageCircle, SlidersHorizontal, type LucideIcon } from "lucide
 import { Reveal } from "../hooks/use-reveal.tsx";
 import { SquiggleText } from "./squiggle-text";
 
+/** Tempo de cada pilar no auto-play. */
+const AUTOPLAY_MS = 4000;
+
 type CaseItem = {
   id: string;
   pillar: string;
   title: string;
   text: string;
   icon: LucideIcon;
-  /** Dados do case (usados na prévia caso não exista screenshot) */
   name: string;
+  /** Dados abaixo só aparecem se o print falhar ao carregar (fallback) */
   tag: string;
   accent: string;
-  /** Troque pelo print real do site: ex. "/cases/brinquedos-e-cia.webp" */
-  image?: string;
+  image: string;
   items: { name: string; price: string }[];
 };
 
@@ -28,7 +30,7 @@ const CASES: CaseItem[] = [
     name: "Brinquedos & Cia",
     tag: "Loja de brinquedos",
     accent: "#F59E0B",
-    // image: "/cases/brinquedos-e-cia.webp",
+    image: "https://i.postimg.cc/MHpMjPJz/Vitrine-Colorida-da-Brinquedos-Cia.png",
     items: [
       { name: "Kit de blocos 120 peças", price: "R$ 89" },
       { name: "Carrinho controle remoto", price: "R$ 149" },
@@ -44,7 +46,7 @@ const CASES: CaseItem[] = [
     name: "Ultra Shake",
     tag: "Shakes e açaí",
     accent: "#16A34A",
-    // image: "/cases/ultra-shake.webp",
+    image: "https://i.postimg.cc/7hZGTsrH/Poster-Neon-Ultra-Shake.png",
     items: [
       { name: "Shake de morango 500 ml", price: "R$ 18" },
       { name: "Shake proteico", price: "R$ 24" },
@@ -60,7 +62,7 @@ const CASES: CaseItem[] = [
     name: "Marina Vitória Confeitaria",
     tag: "Confeitaria artesanal",
     accent: "#DB2777",
-    // image: "/cases/marina-vitoria.webp",
+    image: "https://i.postimg.cc/hvtz7yRc/Landing-Page-de-Confeitaria-Artesanal.png",
     items: [
       { name: "Bolo de pote", price: "R$ 12" },
       { name: "Caixa de brigadeiros", price: "R$ 35" },
@@ -86,18 +88,23 @@ function PhoneFrame({ children }: { children: ReactNode }) {
 }
 
 function CaseScreen({ c }: { c: CaseItem }) {
-  if (c.image) {
+  const [failed, setFailed] = useState(false);
+
+  if (!failed) {
     return (
       <img
         src={c.image}
-        alt={`Prévia do site de ${c.name}`}
+        alt={`Prévia do site de ${c.name} no celular`}
         loading="lazy"
         decoding="async"
-        className="h-full w-full object-cover object-top"
+        draggable={false}
+        onError={() => setFailed(true)}
+        className="h-full w-full select-none object-cover object-top"
       />
     );
   }
 
+  // Fallback: mini-vitrine desenhada em CSS (só aparece se o print não carregar)
   return (
     <div className="flex h-full flex-col bg-white text-[#0B132B]">
       <div className="px-4 pb-3 pt-9">
@@ -153,10 +160,72 @@ function PillarText({ c }: { c: CaseItem }) {
   );
 }
 
+/* ---------- Indicadores (com barra de progresso do auto-play) ---------- */
+
+function Indicators({
+  active,
+  playing,
+  onSelect,
+  className = "",
+}: {
+  active: number;
+  playing: boolean;
+  onSelect: (i: number) => void;
+  className?: string;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Cases de clientes"
+      className={`flex items-center justify-center gap-1 ${className}`}
+    >
+      {CASES.map((c, i) => {
+        const isActive = active === i;
+        return (
+          <button
+            key={c.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            aria-label={`Ver case ${c.name}`}
+            onClick={() => onSelect(i)}
+            className="flex h-8 items-center px-1 transition-transform active:scale-90"
+          >
+            <span
+              className={`relative block h-2.5 overflow-hidden rounded-full bg-[#0B132B]/15 transition-all duration-300 ${
+                isActive ? "w-10" : "w-2.5"
+              }`}
+            >
+              {isActive && (
+                <span
+                  key={`${i}-${playing}`}
+                  className={`absolute inset-0 origin-left rounded-full bg-[#FF5A3D] ${
+                    playing ? "kq-progress" : ""
+                  }`}
+                  style={playing ? { animationDuration: `${AUTOPLAY_MS}ms` } : undefined}
+                />
+              )}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ---------- Desktop: sticky + scroll ---------- */
 
-function DesktopStory() {
-  const [active, setActive] = useState(0);
+function DesktopStory({
+  active,
+  setActive,
+  playing,
+  onSelect,
+}: {
+  active: number;
+  setActive: (i: number) => void;
+  playing: boolean;
+  onSelect: (i: number) => void;
+}) {
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
@@ -173,7 +242,7 @@ function DesktopStory() {
     );
     stepRefs.current.forEach((el) => el && io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, [setActive]);
 
   return (
     <div className="hidden lg:grid lg:grid-cols-2 lg:gap-16">
@@ -194,7 +263,7 @@ function DesktopStory() {
         ))}
       </div>
 
-      <div className="sticky top-24 flex h-[calc(100vh-6rem)] items-center self-start">
+      <div className="sticky top-24 flex h-[calc(100vh-6rem)] flex-col items-center justify-center gap-6 self-start">
         <PhoneFrame>
           {CASES.map((c, i) => (
             <div
@@ -208,6 +277,7 @@ function DesktopStory() {
             </div>
           ))}
         </PhoneFrame>
+        <Indicators active={active} playing={playing} onSelect={onSelect} />
       </div>
     </div>
   );
@@ -215,10 +285,22 @@ function DesktopStory() {
 
 /* ---------- Mobile: carrossel tátil ---------- */
 
-function MobileCarousel() {
+function MobileCarousel({
+  active,
+  setActive,
+  paused,
+  playing,
+  onSelect,
+}: {
+  active: number;
+  setActive: (i: number) => void;
+  paused: boolean;
+  playing: boolean;
+  onSelect: (i: number) => void;
+}) {
   const scroller = useRef<HTMLDivElement>(null);
-  const [slide, setSlide] = useState(0);
 
+  // O carrossel informa qual slide está visível (swipe do usuário)
   useEffect(() => {
     const root = scroller.current;
     if (!root || !("IntersectionObserver" in window)) return;
@@ -226,7 +308,7 @@ function MobileCarousel() {
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            setSlide(Number((entry.target as HTMLElement).dataset.slide));
+            setActive(Number((entry.target as HTMLElement).dataset.slide));
           }
         }
       },
@@ -234,9 +316,23 @@ function MobileCarousel() {
     );
     root.querySelectorAll("[data-slide]").forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, [setActive]);
+
+  // Auto-play: só rola sozinho enquanto o visitante não interagiu
+  useEffect(() => {
+    const root = scroller.current;
+    if (!root || paused || !playing) return;
+    const current = Math.round(root.scrollLeft / root.clientWidth);
+    if (current === active) return;
+    root.scrollTo({
+      left: active * root.clientWidth,
+      // volta do último para o primeiro sem "varrer" os slides do meio
+      behavior: Math.abs(current - active) > 1 ? "auto" : "smooth",
+    });
+  }, [active, paused, playing]);
 
   const goTo = (i: number) => {
+    onSelect(i);
     const root = scroller.current;
     if (!root) return;
     root.scrollTo({ left: i * root.clientWidth, behavior: "smooth" });
@@ -264,21 +360,7 @@ function MobileCarousel() {
         ))}
       </div>
 
-      <div className="mt-6 flex items-center justify-center gap-2" role="tablist" aria-label="Cases">
-        {CASES.map((c, i) => (
-          <button
-            key={c.id}
-            type="button"
-            role="tab"
-            aria-selected={slide === i}
-            aria-label={`Ver case ${c.name}`}
-            onClick={() => goTo(i)}
-            className={`h-2.5 rounded-full transition-all duration-300 active:scale-90 ${
-              slide === i ? "w-8 bg-[#FF5A3D]" : "w-2.5 bg-[#0B132B]/20"
-            }`}
-          />
-        ))}
-      </div>
+      <Indicators active={active} playing={playing} onSelect={goTo} className="mt-4" />
     </div>
   );
 }
@@ -286,8 +368,64 @@ function MobileCarousel() {
 /* ---------- Seção ---------- */
 
 export function PhoneScrollytelling() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [reduced, setReduced] = useState(false);
+
+  const playing = inView && !paused && !reduced;
+  const pause = () => setPaused(true);
+  const select = (i: number) => {
+    setPaused(true);
+    setActive(i);
+  };
+
+  // Quem prefere menos movimento não recebe auto-play
+  useEffect(() => {
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+
+  // O auto-play só roda com a seção visível; ao sair da tela, ele é "rearmado"
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || !("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
+      rootMargin: "-25% 0px -25% 0px",
+      threshold: 0,
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!inView) setPaused(false);
+  }, [inView]);
+
+  // Rolar a página com a seção na tela = controle manual → pausa
+  useEffect(() => {
+    if (!inView || paused) return;
+    const onScroll = () => setPaused(true);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [inView, paused]);
+
+  // Avança para o próximo pilar a cada 4 s
+  useEffect(() => {
+    if (!playing) return;
+    const t = window.setTimeout(() => setActive((a) => (a + 1) % CASES.length), AUTOPLAY_MS);
+    return () => window.clearTimeout(t);
+  }, [playing, active]);
+
   return (
-    <section id="demonstracao" className="bg-[#F9FAFB] py-20 sm:py-28">
+    <section
+      ref={sectionRef}
+      id="demonstracao"
+      onPointerDown={pause}
+      onWheel={pause}
+      onFocusCapture={pause}
+      className="bg-[#F9FAFB] py-20 sm:py-28"
+    >
       <div className="mx-auto max-w-6xl px-5">
         <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-extrabold tracking-tight text-[#0B132B] sm:text-5xl">
@@ -299,8 +437,14 @@ export function PhoneScrollytelling() {
         </Reveal>
 
         <div className="mt-12 sm:mt-16">
-          <DesktopStory />
-          <MobileCarousel />
+          <DesktopStory active={active} setActive={setActive} playing={playing} onSelect={select} />
+          <MobileCarousel
+            active={active}
+            setActive={setActive}
+            paused={paused}
+            playing={playing}
+            onSelect={select}
+          />
         </div>
       </div>
     </section>
