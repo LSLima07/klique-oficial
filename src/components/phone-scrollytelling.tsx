@@ -427,7 +427,7 @@ export function PhoneScrollytelling() {
       className="bg-[#F9FAFB] py-20 sm:py-28"
     >
       <div className="mx-auto max-w-6xl px-5">
-        <Reveal className="mx-auto max-w-2xl text-center">
+        <Reveal stagger className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-extrabold tracking-tight text-[#0B132B] sm:text-5xl">
             Veja seu negócio <SquiggleText>vendendo</SquiggleText> no celular do cliente
           </h2>
