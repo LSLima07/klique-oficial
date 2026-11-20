@@ -9,8 +9,8 @@ export function Pricing() {
   return (
     <section id="orcamento" aria-labelledby="planos-title" className="border-t border-border bg-background py-20 md:py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <Reveal className="text-center">
-          <span className="text-xs font-semibold uppercase text-primary">Taxa única</span>
+        <Reveal stagger className="text-center">
+          <span className="block text-xs font-semibold uppercase text-primary">Taxa única</span>
           <h2 id="planos-title" className="mt-4 text-balance font-display text-3xl font-extrabold tracking-tight md:text-4xl">
             Sua presença digital.{" "}
             <span className="text-primary">
@@ -67,7 +67,7 @@ export function Pricing() {
                     asChild
                     variant={plan.highlight ? "default" : "outline"}
                     className={`group/btn mt-8 h-auto min-h-12 w-full whitespace-normal rounded-full px-4 py-3 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 active:scale-95 motion-reduce:transition-none ${
-                      plan.highlight ? "shadow-coral" : "hover:border-primary/60"
+                      plan.highlight ? "kq-shimmer shadow-coral" : "hover:border-primary/60"
                     }`}
                   >
                     <a
